@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TerraGuard 3D
 
-## Getting Started
+**TerraGuard 3D** is a unified planetary & atmospheric threat intelligence dashboard developed for the **ArcNight 2026 SpaceTech track**. 
 
-First, run the development server:
+It aggregates real-time data from NASA's open telemetry feeds (Near-Earth Asteroids, Solar Storms, and Wildfires), runs the combined data through an AI threat assessment model to calculate a **Global Stress Index**, and visualizes all threats on an interactive 3D WebGL globe.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🚀 Key Features
+
+- **3D Interactive Threat Globe**: A lightweight, low-poly holographic Earth rendering up to 50 active MODIS thermal hotspots and projecting orbit ring contours for hazardous near-Earth asteroids.
+- **AI Threat Synthesis**: Evaluates planetary stress levels and forecasts target vulnerability sectors using the `Mistral-7B-Instruct-v0.2` model via Hugging Face.
+- **Robust Math Heuristics**: Automatically falls back to local mathematical risk models if APIs hit rate limits, credentials are missing, or connection timeouts occur.
+- **Supabase Auditing Ledger**: Logs all real-time analyses and index history into a Postgres database.
+- **Native SVGs**: Responsive linear trend charts rendered procedurally without heavy external libraries.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Framework**: Next.js 14 (App Router, TypeScript)
+- **Styling**: Tailwind CSS (Mission control dark aesthetics)
+- **3D Graphics**: Three.js + React Three Fiber (`@react-three/fiber` & `@react-three/drei`)
+- **State Management**: Zustand
+- **Database**: Supabase (Postgres)
+- **AI Inference**: Hugging Face Inference API (`mistralai/Mistral-7B-Instruct-v0.2`)
+
+---
+
+## 💾 Database Schema Setup
+
+To support the historical ledger logs, run the following SQL command in your Supabase SQL Editor:
+
+```sql
+create table hazard_logs (
+  id bigint generated always as identity primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  stress_index integer not null,
+  risk_summary text not null,
+  vulnerable_sector text not null,
+  source text not null
+);
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚙️ Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file at the root of the project with these keys:
 
-## Learn More
+```env
+# NASA Open API Access Key (Fallback is 'DEMO_KEY')
+NASA_API_KEY=YOUR_NASA_API_KEY
 
-To learn more about Next.js, take a look at the following resources:
+# Supabase Postgres Ledger Credentials
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Hugging Face Model Inference Token
+HF_API_TOKEN=your-hugging-face-token
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛸 Local Setup & Execution
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+3. **Verify Production Compilations**:
+   ```bash
+   npx tsc --noEmit
+   npm run build
+   ```

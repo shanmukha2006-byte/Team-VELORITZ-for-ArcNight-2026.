@@ -1,4 +1,4 @@
-﻿export interface NeoWSAsteroid {
+export interface NeoWSAsteroid {
   id: string;
   name: string;
   estimatedDiameterMeters: number;
@@ -11,7 +11,7 @@ export interface DonkiEvent {
   id: string;
   eventType: string;
   startTime: string;
-  geomagneticScale: string; // e.g. "G1"-"G5" or "none"
+  geomagneticScale: string; // "G1"-"G5", "none", or similar
   plasmaVelocityKmS: number | null;
 }
 
@@ -26,4 +26,5 @@ export interface StressIndexResult {
   globalStressIndex: number;
   riskSummary: string;
   vulnerableSector: string;
+  source?: "ai" | "fallback";
 }
