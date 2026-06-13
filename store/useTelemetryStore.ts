@@ -12,6 +12,7 @@ interface TelemetryState {
   loading: boolean;
   error: string | null;
   fetchAllTelemetry: () => Promise<void>;
+  runAIAnalysis: () => Promise<void>; // Explicit type alignment fix
 }
 
 export const useTelemetryStore = create<TelemetryState>((set) => ({
@@ -27,7 +28,7 @@ export const useTelemetryStore = create<TelemetryState>((set) => ({
   fetchAllTelemetry: async () => {
     set({ loading: true, error: null });
     try {
-      // Execute multi-threaded API requests in parallel
+      // Parallel stream acquisition loop
       const [neoRes, donkiRes, firmsRes] = await Promise.all([
         fetch('/api/neows'),
         fetch('/api/donki'),
@@ -45,19 +46,38 @@ export const useTelemetryStore = create<TelemetryState>((set) => ({
       set({
         neows: neowsData,
         donki: donkiData,
-        firms: firmsData,
-        loading: false
+        firms: firmsData
       });
+      
+      // Safe internal call now supported by interface types
+      await useTelemetryStore.getState().runAIAnalysis();
     } catch (err: any) {
       set({ error: err.message || 'Unknown network sync discrepancy', loading: false });
+    }
+  },
+
+  runAIAnalysis: async () => {
+    const { neows, donki, firms } = useTelemetryStore.getState();
+    try {
+      const res = await fetch('/api/ai-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ neows, donki, firms })
+      });
+      if (!res.ok) throw new Error('AI analysis path rejected request');
+      const data = await res.json();
+      set({
+        stressIndex: data.globalStressIndex,
+        riskSummary: data.riskSummary,
+        vulnerableSector: data.vulnerableSector,
+        loading: false
+      });
+    } catch (err) {
+      set({ loading: false });
     }
   }
 }));
 
-/**
- * Anti-Gravity Custom Hook: Managed Network Polling
- * Automates 5-minute background sweeps to refresh dashboard state safely.
- */
 export function useTelemetryPolling() {
   const fetchAllTelemetry = useTelemetryStore((state) => state.fetchAllTelemetry);
 
@@ -67,7 +87,7 @@ export function useTelemetryPolling() {
     const intervalId = setInterval(() => {
       console.log('--- COCKPIT SYNCHRONIZATION RUNNING ---');
       fetchAllTelemetry();
-    }, 5 * 60 * 1000); // Strict 5-minute cooldown loop
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, [fetchAllTelemetry]);
