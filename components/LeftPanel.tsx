@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTelemetryStore } from '@/store/useTelemetryStore';
-import { ShieldAlert, Orbit, Sun } from 'lucide-react';
+import { Orbit, Sun } from 'lucide-react';
 
 export default function LeftPanel() {
   const { neows, donki, loading } = useTelemetryStore();
@@ -19,7 +19,7 @@ export default function LeftPanel() {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        timeZoneName: 'short'
+        hour12: false
       });
     } catch {
       return dateStr;
@@ -27,146 +27,146 @@ export default function LeftPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0f1d]/90 border-r border-[#1e2d4a]/50 p-4 space-y-4 overflow-hidden backdrop-blur-md">
+    <div className="flex flex-col h-full bg-[#040812] border-r border-slate-900 p-4 space-y-5 overflow-hidden select-none">
       
-      {/* SECTION 1: NEAR-EARTH OBJECTS */}
+      {/* SECTION 1: NEAR-EARTH OBJECTS TELEMETRY GRID */}
       <div className="flex flex-col flex-1 min-h-[50%] overflow-hidden">
-        <div className="flex items-center space-x-2 border-b border-[#1e2d4a]/40 pb-2 mb-2">
-          <Orbit className="w-4 h-4 text-cyan-400 animate-spin-slow" />
-          <h2 className="text-xs font-black font-mono tracking-widest text-cyan-400 uppercase">
-            Near-Earth Objects (NeoWS)
+        <div className="flex items-center space-x-2 border-b border-slate-850 pb-2 mb-3">
+          <Orbit className="w-3.5 h-3.5 text-slate-400" />
+          <h2 className="text-[10px] font-black font-mono tracking-widest text-slate-300 uppercase">
+            NEAR-EARTH OBJECT VECTORS (NEOWS)
           </h2>
         </div>
 
         {loading ? (
-          // SKELETON LOADER
           <div className="space-y-2 flex-1 overflow-y-auto pr-1">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="bg-[#0f172a]/50 border border-[#1e2d4a]/30 rounded p-3 space-y-2 animate-pulse">
-                <div className="h-3 bg-[#1e2d4a]/60 rounded w-3/4"></div>
-                <div className="h-2 bg-[#1e2d4a]/40 rounded w-1/2"></div>
-                <div className="h-2 bg-[#1e2d4a]/40 rounded w-2/3"></div>
-              </div>
+              <div key={n} className="border border-slate-900 h-10 w-full animate-pulse" />
             ))}
           </div>
         ) : neows.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 bg-[#0f172a]/20 border border-dashed border-[#1e2d4a]/30 rounded p-4 text-center">
-            <span className="text-xs font-mono text-slate-500">NO ASTEROID VECTORS ACQUIRED</span>
+          <div className="flex flex-col items-center justify-center flex-1 border border-slate-900 p-4 text-center">
+            <span className="text-[9px] font-mono text-slate-600 uppercase">no telemetry acquired</span>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {neows.map((asteroid) => (
-              <div
-                key={asteroid.id}
-                className={`group relative bg-[#0f172a]/60 border rounded p-3 transition-all duration-300 hover:bg-[#131f3b]/70 ${
-                  asteroid.isPotentiallyHazardous
-                    ? 'border-red-900/50 hover:border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.05)]'
-                    : 'border-[#1e2d4a]/40 hover:border-cyan-800/50'
-                }`}
-              >
-                {/* Hazard indicator glow */}
-                {asteroid.isPotentiallyHazardous && (
-                  <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500 animate-ping m-3" />
-                )}
-
-                <div className="flex justify-between items-start">
-                  <span className="text-xs font-bold font-mono text-slate-200 group-hover:text-white transition-colors truncate max-w-[70%]">
-                    {asteroid.name}
-                  </span>
-                  {asteroid.isPotentiallyHazardous && (
-                    <span className="flex items-center space-x-0.5 bg-red-950/80 border border-red-500/30 text-[8px] font-mono font-black text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
-                      <ShieldAlert className="w-2.5 h-2.5" />
-                      <span>HAZARD</span>
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1 mt-2 text-[10px] font-mono text-slate-400">
-                  <div>
-                    <span className="text-slate-500">Diameter:</span>{' '}
-                    <span className="text-slate-300">{asteroid.estimatedDiameterMeters.toFixed(1)} m</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Velocity:</span>{' '}
-                    <span className="text-slate-300">{asteroid.relativeVelocityKmS.toFixed(1)} km/s</span>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-slate-500">Miss Dist:</span>{' '}
-                    <span className="text-cyan-400">{formatNumber(asteroid.missDistanceKm)} km</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+            <table className="w-full text-left font-mono text-[10px] border-collapse">
+              <thead>
+                <tr className="border-b border-slate-900 text-slate-500 uppercase text-[8px] tracking-wider">
+                  <th className="pb-1.5 font-bold">Designation</th>
+                  <th className="pb-1.5 font-bold text-right">Size</th>
+                  <th className="pb-1.5 font-bold text-right">Velocity</th>
+                  <th className="pb-1.5 font-bold text-right">Miss Distance</th>
+                  <th className="pb-1.5 font-bold text-center">Hazard</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-900/60">
+                {neows.map((asteroid) => (
+                  <tr
+                    key={asteroid.id}
+                    className="hover:bg-slate-900/40 transition-colors"
+                  >
+                    <td className="py-2 text-slate-300 font-bold truncate max-w-[80px]">
+                      {asteroid.name.replace(/[()]/g, '')}
+                    </td>
+                    <td className="py-2 text-right text-slate-400">
+                      {asteroid.estimatedDiameterMeters.toFixed(0)}m
+                    </td>
+                    <td className="py-2 text-right text-slate-400">
+                      {asteroid.relativeVelocityKmS.toFixed(1)}k/s
+                    </td>
+                    <td className="py-2 text-right text-slate-400">
+                      {formatNumber(asteroid.missDistanceKm / 1e6)}M km
+                    </td>
+                    <td className="py-2 text-center">
+                      {asteroid.isPotentiallyHazardous ? (
+                        <span className="inline-block bg-red-950/40 border border-red-900 text-red-500 text-[8px] font-bold px-1 rounded-sm uppercase tracking-wide">
+                          YES
+                        </span>
+                      ) : (
+                        <span className="text-slate-600 text-[8px]">NO</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
 
-      {/* SECTION 2: SOLAR/GEOMAGNETIC ACTIVITY */}
+      {/* SECTION 2: DONKI SPACE WEATHER ALERT TABLE */}
       <div className="flex flex-col flex-1 min-h-[45%] overflow-hidden">
-        <div className="flex items-center space-x-2 border-b border-[#1e2d4a]/40 pb-2 mb-2">
-          <Sun className="w-4 h-4 text-amber-500 animate-pulse" />
-          <h2 className="text-xs font-black font-mono tracking-widest text-amber-500 uppercase">
-            Space Weather Alerts (DONKI)
+        <div className="flex items-center space-x-2 border-b border-slate-850 pb-2 mb-3">
+          <Sun className="w-3.5 h-3.5 text-slate-400" />
+          <h2 className="text-[10px] font-black font-mono tracking-widest text-slate-300 uppercase">
+            SPACE WEATHER TELEMETRY (DONKI)
           </h2>
         </div>
 
         {loading ? (
-          // SKELETON LOADER
           <div className="space-y-2 flex-1 overflow-y-auto pr-1">
             {[1, 2].map((n) => (
-              <div key={n} className="bg-[#0f172a]/50 border border-[#1e2d4a]/30 rounded p-3 space-y-2 animate-pulse">
-                <div className="h-3 bg-[#1e2d4a]/60 rounded w-1/3"></div>
-                <div className="h-2 bg-[#1e2d4a]/40 rounded w-3/4"></div>
-                <div className="h-2 bg-[#1e2d4a]/40 rounded w-1/2"></div>
-              </div>
+              <div key={n} className="border border-slate-900 h-10 w-full animate-pulse" />
             ))}
           </div>
         ) : donki.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 bg-[#0f172a]/20 border border-dashed border-[#1e2d4a]/30 rounded p-4 text-center">
-            <span className="text-xs font-mono text-slate-500">NO CORONAL ACTIVITY MONITORED</span>
+          <div className="flex flex-col items-center justify-center flex-1 border border-slate-900 p-4 text-center">
+            <span className="text-[9px] font-mono text-slate-600 uppercase">no solar activity monitored</span>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {donki.map((event) => {
-              // Color code the geomagnetic scale badge
-              let scaleBadgeColor = 'bg-[#101b33] border-[#1e2d4a]/50 text-slate-400';
-              if (event.geomagneticScale.match(/G[1-2]/i)) {
-                scaleBadgeColor = 'bg-amber-950/80 border-amber-500/30 text-amber-400';
-              } else if (event.geomagneticScale.match(/G[3-5]/i)) {
-                scaleBadgeColor = 'bg-red-950/80 border-red-500/30 text-red-400 animate-pulse';
-              }
+          <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+            <table className="w-full text-left font-mono text-[10px] border-collapse">
+              <thead>
+                <tr className="border-b border-slate-900 text-slate-500 uppercase text-[8px] tracking-wider">
+                  <th className="pb-1.5 font-bold">Event Type</th>
+                  <th className="pb-1.5 font-bold">Start Time</th>
+                  <th className="pb-1.5 font-bold text-right">Velocity</th>
+                  <th className="pb-1.5 font-bold text-center">Scale</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-900/60">
+                {donki.map((event) => {
+                  const isHighAlert = event.geomagneticScale.match(/G[3-5]/i);
+                  const isLowAlert = event.geomagneticScale.match(/G[1-2]/i);
 
-              return (
-                <div
-                  key={event.id}
-                  className="bg-[#0f172a]/60 border border-[#1e2d4a]/40 rounded p-3 transition-all duration-300 hover:bg-[#131f3b]/70 hover:border-amber-900/50"
-                >
-                  <div className="flex justify-between items-start">
-                    <span className="text-xs font-bold font-mono text-slate-200 uppercase tracking-wide truncate max-w-[70%]">
-                      {event.eventType}
-                    </span>
-                    {event.geomagneticScale !== 'none' && (
-                      <span className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border uppercase tracking-wider ${scaleBadgeColor}`}>
+                  let alertBadge = <span className="text-slate-600 text-[8px]">--</span>;
+                  if (isHighAlert) {
+                    alertBadge = (
+                      <span className="inline-block bg-red-950/40 border border-red-900 text-red-500 text-[8px] font-bold px-1 rounded-sm uppercase tracking-wide">
                         {event.geomagneticScale}
                       </span>
-                    )}
-                  </div>
+                    );
+                  } else if (isLowAlert) {
+                    alertBadge = (
+                      <span className="inline-block bg-amber-950/40 border border-amber-900 text-amber-500 text-[8px] font-bold px-1 rounded-sm uppercase tracking-wide">
+                        {event.geomagneticScale}
+                      </span>
+                    );
+                  }
 
-                  <div className="text-[10px] font-mono text-slate-400 mt-2 space-y-1">
-                    <div>
-                      <span className="text-slate-500">Initiated:</span>{' '}
-                      <span className="text-slate-300">{formatDate(event.startTime)}</span>
-                    </div>
-                    {event.plasmaVelocityKmS && (
-                      <div className="flex items-center space-x-1">
-                        <span className="text-slate-500">Plasma Velocity:</span>{' '}
-                        <span className="text-amber-400">{event.plasmaVelocityKmS} km/s</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                  return (
+                    <tr
+                      key={event.id}
+                      className="hover:bg-slate-900/40 transition-colors"
+                    >
+                      <td className="py-2 text-slate-300 font-bold uppercase">
+                        {event.eventType}
+                      </td>
+                      <td className="py-2 text-slate-400">
+                        {formatDate(event.startTime)}
+                      </td>
+                      <td className="py-2 text-right text-slate-400">
+                        {event.plasmaVelocityKmS ? `${event.plasmaVelocityKmS} k/s` : '--'}
+                      </td>
+                      <td className="py-2 text-center">
+                        {alertBadge}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

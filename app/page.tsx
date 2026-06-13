@@ -7,7 +7,7 @@ import HeaderGauge from '@/components/HeaderGauge';
 import LeftPanel from '@/components/LeftPanel';
 import RightPanel from '@/components/RightPanel';
 import Globe3D from '@/components/Globe3D';
-import { Shield, Calendar } from 'lucide-react';
+import { Calendar, Cpu } from 'lucide-react';
 
 export default function Home() {
   // Start the background telemetry polling synchronization (5m intervals)
@@ -24,96 +24,93 @@ export default function Home() {
   }, [loading]);
 
   return (
-    <main className="relative flex flex-col h-screen w-screen bg-[#070a13] text-slate-200 overflow-hidden select-none selection:bg-cyan-500/30">
+    <main className="relative flex flex-col h-screen w-screen bg-[#030712] text-slate-200 overflow-hidden select-none">
       
-      {/* Background grid-line overlay pattern for cockpit feel */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] z-0" />
+      {/* Subtle dotted crosshair background pattern */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.04] bg-[radial-gradient(#475569_1px,transparent_1px)] bg-[size:16px_16px] z-0" />
 
-      {/* TOP HEADER: Full-Width Strip */}
-      <header className="relative z-10 grid grid-cols-3 items-center px-6 py-4 bg-[#0a0f1d]/85 border-b border-[#1e2d4a]/50 shadow-[0_4px_20px_rgba(0,0,0,0.4)] backdrop-blur-md shrink-0">
+      {/* TOP HEADER: Full-Width avionic strip */}
+      <header className="relative z-10 grid grid-cols-3 items-center px-5 py-3 bg-[#040812] border-b border-slate-900 shrink-0">
         
-        {/* Left: Brand / Title */}
-        <div className="flex flex-col space-y-1">
-          <div className="flex items-center space-x-2">
-            <Shield className="w-5 h-5 text-cyan-400" />
-            <h1 className="text-lg font-black tracking-widest text-white font-mono uppercase">
-              TERRAGUARD 3D
+        {/* Left: Telemetry Sector metadata */}
+        <div className="flex flex-col space-y-0.5">
+          <div className="flex items-center space-x-1.5">
+            <Cpu className="w-4 h-4 text-slate-400" />
+            <h1 className="text-xs font-black tracking-widest text-slate-200 font-mono uppercase">
+              TERRAGUARD 3D // COCKPIT
             </h1>
           </div>
-          <p className="text-[9px] text-slate-400 font-mono tracking-wider uppercase">
-            Unified Planetary &amp; Atmospheric Threat Vector Intelligence Cockpit
+          <p className="text-[8px] text-slate-500 font-mono tracking-wider uppercase">
+            VECTOR INTEL FEED :: SECTOR_ATMOS_PLANETARY
           </p>
         </div>
 
-        {/* Center: Stress index radial gauge */}
+        {/* Center: Stress dial */}
         <div className="flex justify-center">
           <HeaderGauge />
         </div>
 
-        {/* Right: Operational Status / Logs Link */}
-        <div className="flex items-center justify-end space-x-6">
-          <div className="flex flex-col items-end font-mono text-[10px] space-y-0.5">
-            <div className="flex items-center space-x-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span className="text-emerald-400 font-bold uppercase">SECURE LINK</span>
+        {/* Right: Operational Status / History Panel Navigation */}
+        <div className="flex items-center justify-end space-x-4">
+          <div className="flex flex-col items-end font-mono text-[9px] space-y-0.5">
+            <div className="flex items-center space-x-1">
+              <span className="w-1.5 h-1.5 bg-emerald-500" />
+              <span className="text-emerald-500 font-bold uppercase">SAT LINK SECURE</span>
             </div>
-            <span className="text-slate-400">SAT FEED STABLE</span>
+            <span className="text-slate-500">FEED SYNC STATE: NOMINAL</span>
           </div>
 
           <Link
             href="/history"
-            className="flex items-center space-x-2 bg-gradient-to-r from-blue-900/40 to-cyan-900/40 hover:from-blue-800/60 hover:to-cyan-800/60 border border-cyan-500/30 hover:border-cyan-400/60 text-white font-mono text-xs font-bold px-4 py-2 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+            className="flex items-center space-x-1.5 bg-[#090e18] hover:bg-slate-900 border border-slate-800 text-slate-300 font-mono text-[10px] font-bold px-3 py-1.5 transition-colors duration-150"
           >
-            <Calendar className="w-3.5 h-3.5" />
+            <Calendar className="w-3 h-3" />
             <span>HISTORY LOGS</span>
           </Link>
         </div>
       </header>
 
-      {/* Warning Banner if rates run dry / feed degraded */}
+      {/* Warning Alert Banner (If API feeds return degraded parameters) */}
       {error && (
-        <div className="relative z-15 bg-amber-950/60 border-b border-amber-500/30 text-amber-400 font-mono text-[10px] tracking-wider text-center py-1.5 px-4 animate-fade-in flex items-center justify-center space-x-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-          <span>TELEMETRY FEED DEGRADED - USING CACHED/PARTIAL THREAT DATA: {error}</span>
+        <div className="relative z-15 bg-amber-950/20 border-b border-amber-900/30 text-amber-500 font-mono text-[9px] tracking-wider text-center py-1.5 px-4 flex items-center justify-center space-x-2">
+          <span className="w-1.5 h-1.5 bg-amber-500" />
+          <span>DEGRADED LINK: FEED SYNCHRONIZATION ERROR - {error}</span>
         </div>
       )}
 
-      {/* CORE INTERFACE: 3-Column Cockpit Layout */}
+      {/* CORE COCKPIT INTERFACE: 3-Column Split Deck */}
       <section className="relative z-10 flex-grow grid grid-cols-12 min-h-0 w-full">
-        {/* Left Column (25% equivalent width) */}
+        {/* Left Column (Raw Telemetry Streams - 25% Width) */}
         <div className="col-span-3 h-full min-h-0">
           <LeftPanel />
         </div>
 
-        {/* Center 3D Globe Column (50% equivalent width) */}
-        <div className="col-span-6 h-full min-h-0 relative border-r border-l border-[#1e2d4a]/50">
+        {/* Center 3D Globe Deck (50% Width) */}
+        <div className="col-span-6 h-full min-h-0 relative border-r border-l border-slate-900">
           <Globe3D />
         </div>
 
-        {/* Right Column (25% equivalent width) */}
+        {/* Right Column (Flight Threat Computer - 25% Width) */}
         <div className="col-span-3 h-full min-h-0">
           <RightPanel />
         </div>
       </section>
 
-      {/* FOOTER METRIC STRIP */}
-      <footer className="relative z-10 flex items-center justify-between px-6 py-2.5 bg-[#080d1a] border-t border-[#1e2d4a]/50 text-[10px] font-mono text-slate-500 shrink-0 select-none">
+      {/* FOOTER STRIP */}
+      <footer className="relative z-10 flex items-center justify-between px-5 py-2 bg-[#040812] border-t border-slate-900 text-[9px] font-mono text-slate-500 shrink-0 select-none">
         <div className="flex items-center space-x-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="text-slate-400 uppercase font-black">LIVE TELEMETRY MONITORING</span>
+          <span className="w-1.5 h-1.5 bg-emerald-500" />
+          <span className="text-slate-400 font-bold uppercase">LIVE MONITORING DATASTREAM</span>
         </div>
         
         <div className="flex items-center space-x-6">
           {lastUpdated && (
             <div>
-              LAST SYNC: <span className="text-cyan-400 font-bold">{lastUpdated}</span>
+              LAST SYNC: <span className="text-slate-355 font-bold">{lastUpdated}</span>
             </div>
           )}
           <div>
-            SUBMISSION: <span className="text-slate-400 font-bold">ARCNIGHT 2026</span>
+            SUBMISSION: <span className="text-slate-500 font-bold">ARCNIGHT 2026</span>
           </div>
         </div>
       </footer>

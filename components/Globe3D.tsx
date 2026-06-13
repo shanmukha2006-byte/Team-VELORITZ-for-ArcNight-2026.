@@ -24,13 +24,13 @@ class WebGLErrorBoundary extends React.Component<{ children: React.ReactNode }, 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d] border border-[#1e2d4a]/50 rounded-xl p-6 text-center select-none">
-          <div className="text-red-500 font-mono text-xs font-bold uppercase mb-2">
-            3D ENGINE INIT FAILED
+        <div className="flex flex-col items-center justify-center w-full h-full bg-[#030712] border border-slate-900 p-6 text-center select-none">
+          <div className="text-slate-500 font-mono text-[10px] font-bold uppercase mb-2">
+            3D ENGINE INIT DEGRADED
           </div>
-          <p className="text-slate-400 text-[10px] font-mono max-w-sm">
-            WebGL acceleration is disabled or unsupported in this browser/device. 
-            TerraGuard 3D is running in flat data telemetry mode.
+          <p className="text-slate-600 text-[9px] font-mono max-w-sm leading-normal">
+            WebGL acceleration is unsupported on this hardware configuration. 
+            Telemetry is routing to the tabular cockpit feeds.
           </p>
         </div>
       );
@@ -39,43 +39,43 @@ class WebGLErrorBoundary extends React.Component<{ children: React.ReactNode }, 
   }
 }
 
-// --- DYNAMIC PULSING HOTSPOT MARKER ---
-function PulsingHotspot({ position, frp }: { position: [number, number, number]; frp: number }) {
+// --- PRECISION THERMAL SPIKE MARKER ---
+function ThermalSpike({ position, frp }: { position: [number, number, number]; frp: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
   
-  useFrame((state) => {
-    if (meshRef.current) {
-      const time = state.clock.getElapsedTime();
-      // Animate pulsing scale based on FRP intensity
-      const pulseSpeed = 4 + (frp > 100 ? 4 : 0);
-      const scaleFactor = 1 + Math.sin(time * pulseSpeed) * 0.25;
-      meshRef.current.scale.set(scaleFactor, scaleFactor, scaleFactor);
-    }
-  });
-
-  // Hotspots are scaled based on fire radiative power (FRP)
-  const size = Math.min(Math.max(frp / 200, 0.025), 0.08);
+  // Calculate spike parameters
+  const height = Math.min(Math.max(frp / 250, 0.15), 0.6);
+  const dir = new THREE.Vector3(...position).normalize();
+  // Align Y-axis (cylinder direction) with outward position vector
+  const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
 
   return (
-    <mesh position={position} ref={meshRef}>
-      <sphereGeometry args={[size, 8, 8]} />
-      <meshBasicMaterial color="#ff2244" toneMapped={false} />
-    </mesh>
+    <group position={position} quaternion={quaternion}>
+      {/* Tall, narrow, semi-translucent cylinder representing fire radiative power */}
+      <mesh position={[0, height / 2, 0]} ref={meshRef}>
+        <cylinderGeometry args={[0.003, 0.012, height, 6]} />
+        <meshBasicMaterial color="#EF4444" transparent opacity={0.65} />
+      </mesh>
+      {/* Matte warning core dot at base */}
+      <mesh>
+        <sphereGeometry args={[0.015, 6, 6]} />
+        <meshBasicMaterial color="#EF4444" />
+      </mesh>
+    </group>
   );
 }
 
 // --- HAZARDOUS ASTEROID ORBIT RING ---
 function AsteroidOrbit({ index }: { index: number }) {
-  // Compute distinct inclinations and tilts for each orbit
   const tiltX = (index * 0.35) % Math.PI;
   const tiltZ = (index * 0.18) % Math.PI;
-  // Slowly space orbits outward
   const radius = 2.3 + index * 0.12;
 
   return (
     <mesh rotation={[tiltX, 0, tiltZ]}>
-      <torusGeometry args={[radius, 0.007, 8, 64]} />
-      <meshBasicMaterial color="#ffaa00" transparent opacity={0.2} toneMapped={false} />
+      {/* Razor-thin torus representing orbit */}
+      <torusGeometry args={[radius, 0.0015, 6, 64]} />
+      <meshBasicMaterial color="#94A3B8" transparent opacity={0.08} />
     </mesh>
   );
 }
@@ -85,18 +85,15 @@ function InteractiveEarth() {
   const earthGroupRef = useRef<THREE.Group>(null);
   const { firms } = useTelemetryStore();
 
-  // Slow rotation on the Y axis
   useFrame(() => {
     if (earthGroupRef.current) {
-      earthGroupRef.current.rotation.y += 0.002;
+      earthGroupRef.current.rotation.y += 0.0015; // Slow rotation
     }
   });
 
-  // Convert Lat/Lng coordinates to 3D Cartesian coordinates
-  // Earth Sphere Radius: 2.0
-  const convertLatLng = (lat: number, lng: number, radius = 2.01): [number, number, number] => {
+  const convertLatLng = (lat: number, lng: number, radius = 2.0): [number, number, number] => {
     const phi = (lat * Math.PI) / 180;
-    const theta = ((360 - lng) * Math.PI) / 180; // invert for standard clockwise rotation
+    const theta = ((360 - lng) * Math.PI) / 180;
 
     const x = radius * Math.cos(phi) * Math.sin(theta);
     const y = radius * Math.sin(phi);
@@ -105,35 +102,33 @@ function InteractiveEarth() {
     return [x, y, z];
   };
 
-  // Limit to top 50 active hotspots by FRP
   const activeHotspots = [...firms]
     .sort((a, b) => b.frpMegawatts - a.frpMegawatts)
     .slice(0, 50);
 
   return (
     <group ref={earthGroupRef}>
-      {/* Solid inner dark earth core */}
+      {/* Matte inner core */}
       <mesh>
-        <sphereGeometry args={[2.0, 32, 32]} />
-        <meshBasicMaterial color="#060b13" />
+        <sphereGeometry args={[1.99, 32, 32]} />
+        <meshBasicMaterial color="#040812" />
       </mesh>
 
-      {/* Holographic Wireframe Grid */}
+      {/* Titanium Wireframe Grid */}
       <mesh>
-        <sphereGeometry args={[2.005, 32, 32]} />
+        <sphereGeometry args={[2.0, 30, 30]} />
         <meshBasicMaterial
-          color="#1e3a8a"
+          color="#475569"
           wireframe
           transparent
-          opacity={0.15}
-          toneMapped={false}
+          opacity={0.08}
         />
       </mesh>
 
-      {/* Wildfire markers group */}
+      {/* Wildfire spikes */}
       {activeHotspots.map((hotspot, idx) => {
         const pos = convertLatLng(hotspot.latitude, hotspot.longitude);
-        return <PulsingHotspot key={idx} position={pos} frp={hotspot.frpMegawatts} />;
+        return <ThermalSpike key={idx} position={pos} frp={hotspot.frpMegawatts} />;
       })}
     </group>
   );
@@ -143,24 +138,21 @@ function InteractiveEarth() {
 function Scene() {
   const { neows } = useTelemetryStore();
 
-  // Filter and limit potentially hazardous asteroids
   const dangerousAsteroids = neows
     .filter(a => a.isPotentiallyHazardous)
     .slice(0, 10);
 
   return (
     <>
-      {/* Background Starfield */}
-      <Stars radius={100} depth={50} count={800} factor={3} saturation={0.5} fade speed={1.2} />
+      {/* Subtle depth stars */}
+      <Stars radius={100} depth={40} count={200} factor={1.5} saturation={0} fade speed={0.5} />
 
-      {/* Ambient and directional lights */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 3, 5]} intensity={1.0} />
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[5, 3, 5]} intensity={0.8} />
 
-      {/* The rotating Earth and its hotspots */}
       <InteractiveEarth />
 
-      {/* Asteroid Orbits (Fixed outer rings - do not rotate with Earth) */}
+      {/* Asteroid vector rings */}
       {dangerousAsteroids.map((_, idx) => (
         <AsteroidOrbit key={idx} index={idx} />
       ))}
@@ -173,7 +165,6 @@ export default function Globe3D() {
   const { loading } = useTelemetryStore();
   const [webGlSupported, setWebGlSupported] = useState(true);
 
-  // Quick feature test for WebGL availability
   useEffect(() => {
     try {
       const canvas = document.createElement('canvas');
@@ -189,13 +180,13 @@ export default function Globe3D() {
 
   if (!webGlSupported) {
     return (
-      <div className="flex flex-col items-center justify-center w-full h-full bg-[#0a0f1d] border border-[#1e2d4a]/50 rounded-xl p-6 text-center select-none">
-        <div className="text-red-500 font-mono text-xs font-bold uppercase mb-2">
-          WEBGL GRAPHICS NOT AVAILABLE
+      <div className="flex flex-col items-center justify-center w-full h-full bg-[#030712] border border-slate-900 p-6 text-center select-none">
+        <div className="text-slate-500 font-mono text-[10px] font-bold uppercase mb-2">
+          WEBGL DEGRADED
         </div>
-        <p className="text-slate-400 text-[10px] font-mono max-w-sm">
-          WebGL acceleration is disabled or unsupported in this browser/device. 
-          TerraGuard 3D is running in flat data telemetry mode.
+        <p className="text-slate-600 text-[9px] font-mono max-w-sm">
+          WebGL acceleration is disabled or unsupported in this environment. 
+          Telemetry is routing to the tabular cockpit feeds.
         </p>
       </div>
     );
@@ -203,21 +194,21 @@ export default function Globe3D() {
 
   return (
     <WebGLErrorBoundary>
-      <div className="relative w-full h-full flex items-center justify-center select-none overflow-hidden">
+      <div className="relative w-full h-full flex items-center justify-center select-none overflow-hidden bg-[#030712]">
         
         {/* Visual telemetry HUD indicators overlay */}
-        <div className="absolute top-4 left-4 z-10 font-mono text-[9px] text-cyan-400/70 pointer-events-none select-none bg-[#090e17]/60 border border-cyan-500/20 px-2.5 py-1.5 rounded backdrop-blur-sm">
+        <div className="absolute top-4 left-4 z-10 font-mono text-[8px] text-slate-500 pointer-events-none select-none border border-slate-900 bg-[#040812]/85 px-2.5 py-1.5">
           <div>LATENCY: NOMINAL</div>
-          <div>MARKERS: ACTIVE HOTSPOTS (FRP &gt; 50)</div>
-          <div>ORBITS: NEOWS THREAT CONTOURS</div>
+          <div>MARKERS: THERMAL SPIKES (FRP &gt; 50)</div>
+          <div>ORBITS: NEOWS VECTOR TRAJECTORIES</div>
         </div>
 
         {/* Loading overlay spinner */}
         {loading && (
-          <div className="absolute inset-0 bg-[#080d17]/80 z-20 flex flex-col items-center justify-center space-y-3">
-            <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest animate-pulse">
-              Initializing 3D viewport...
+          <div className="absolute inset-0 bg-[#030712]/90 z-20 flex flex-col items-center justify-center space-y-2">
+            <div className="w-5 h-5 border border-slate-800 border-t-transparent rounded-full animate-spin" />
+            <span className="text-[8px] font-mono text-slate-400 uppercase tracking-widest animate-pulse">
+              SYNCING GRAPHICS VIEWPORT...
             </span>
           </div>
         )}
@@ -225,7 +216,7 @@ export default function Globe3D() {
         {/* Canvas viewport */}
         <Canvas
           camera={{ position: [0, 0, 4.2], fov: 60 }}
-          style={{ width: '100%', height: '100%', background: '#070a13' }}
+          style={{ width: '100%', height: '100%', background: '#030712' }}
         >
           <Scene />
         </Canvas>
