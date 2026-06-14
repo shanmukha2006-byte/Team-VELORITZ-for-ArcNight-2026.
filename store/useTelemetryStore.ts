@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { useEffect } from 'react';
 import { NeoWSAsteroid, DonkiEvent, FirmsHotspot } from '../types';
-import { supabase } from '../lib/supabaseClient';
 
 interface TelemetryState {
   neows: NeoWSAsteroid[];
@@ -13,10 +12,14 @@ interface TelemetryState {
   source: 'ai' | 'fallback';
   loading: boolean;
   error: string | null;
+  viewportFocus: 'SOLAR' | 'EARTH';
+  selectedAsteroidId: string | null;
   
   fetchAllTelemetry: () => Promise<void>;
   runAIAnalysis: () => Promise<void>;
   logToHistory: () => Promise<void>;
+  setViewportFocus: (focus: 'SOLAR' | 'EARTH') => void;
+  setSelectedAsteroidId: (id: string | null) => void;
 }
 
 export const useTelemetryStore = create<TelemetryState>((set, get) => ({
@@ -29,6 +32,11 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   source: 'fallback',
   loading: true,
   error: null,
+  viewportFocus: 'EARTH',
+  selectedAsteroidId: null,
+
+  setViewportFocus: (focus) => set({ viewportFocus: focus }),
+  setSelectedAsteroidId: (id) => set({ selectedAsteroidId: id }),
 
   fetchAllTelemetry: async () => {
     set({ loading: true, error: null });
@@ -114,20 +122,20 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   logToHistory: async () => {
     const { stressIndex, riskSummary, vulnerableSector, source } = get();
     try {
-      // Perform dynamic insert into Supabase
-      const { error } = await supabase
-        .from('hazard_logs')
-        .insert([
-          {
-            stress_index: stressIndex,
-            risk_summary: riskSummary,
-            vulnerable_sector: vulnerableSector,
-            source: source
-          }
-        ]);
-      
-      if (error) {
-        console.error('Supabase logging failed:', error.message);
+      const res = await fetch('/api/history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          stress_index: stressIndex,
+          risk_summary: riskSummary,
+          vulnerable_sector: vulnerableSector,
+          source: source
+        })
+      });
+      if (!res.ok) {
+        console.error('SQLite history logging failed:', res.statusText);
       }
     } catch (err) {
       console.error('Database connection error in logToHistory:', err);

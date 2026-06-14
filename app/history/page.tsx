@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
 import { ArrowLeft, RefreshCw, AlertTriangle, ShieldAlert, Calendar } from 'lucide-react';
 
 interface HazardLog {
@@ -23,20 +22,15 @@ export default function HistoryPage() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: dbError } = await supabase
-        .from('hazard_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (dbError) {
-        throw new Error(dbError.message);
+      const res = await fetch('/api/history');
+      if (!res.ok) {
+        throw new Error(`Failed to load logs: ${res.statusText}`);
       }
-
+      const data = await res.json();
       setLogs(data || []);
     } catch (err) {
       console.error('Error fetching historical logs:', err);
-      const message = err instanceof Error ? err.message : 'Failed to connect to Supabase database.';
+      const message = err instanceof Error ? err.message : 'Failed to connect to SQLite database.';
       setError(message);
     } finally {
       setLoading(false);
@@ -102,7 +96,7 @@ export default function HistoryPage() {
               <span>PLANETARY THREAT HISTORICAL LOGS</span>
             </h1>
             <p className="text-[9px] text-slate-400 font-mono tracking-wider uppercase">
-              Supabase Ledger Verification Registry // Historical Vector Indexes
+              SQLite Threat Ledger Registry // Local Telemetry Vector Indexes
             </p>
           </div>
         </div>
@@ -136,7 +130,7 @@ export default function HistoryPage() {
           ) : error ? (
             <div className="h-44 w-full flex flex-col items-center justify-center bg-red-950/20 border border-red-500/20 rounded-lg text-center p-4">
               <AlertTriangle className="w-6 h-6 text-red-500 mb-2 animate-bounce" />
-              <div className="text-red-400 font-mono font-bold text-xs">DATABASE FEED OFFLINE</div>
+              <div className="text-red-400 font-mono font-bold text-xs">SQLITE DATABASE OFFLINE</div>
               <p className="text-slate-400 font-mono text-[10px] max-w-sm mt-1">{error}</p>
             </div>
           ) : logs.length === 0 ? (
@@ -144,7 +138,7 @@ export default function HistoryPage() {
               <ShieldAlert className="w-6 h-6 text-amber-500 mb-2 animate-pulse" />
               <div className="text-amber-400 font-mono font-bold text-xs">NO INCIDENT LEDGERS FOUND</div>
               <p className="text-slate-400 font-mono text-[10px] max-w-sm mt-1">
-                Run the main dashboard to acquire telemetry feeds and log them into the Supabase database.
+                Run the main dashboard to acquire telemetry feeds and log them into the SQLite database.
               </p>
             </div>
           ) : (

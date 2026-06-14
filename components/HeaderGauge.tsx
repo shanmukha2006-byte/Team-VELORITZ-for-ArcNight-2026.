@@ -6,57 +6,57 @@ import { useTelemetryStore } from '@/store/useTelemetryStore';
 export default function HeaderGauge() {
   const { stressIndex, loading } = useTelemetryStore();
 
-  // Precision avionic matte colors
-  let color = '#10B981'; // Emerald Stable
-  let statusText = 'SYS ACTIVE // STABLE';
+  // Precision avionic color mapping
+  let color = '#10B981'; // Nominal / Stable
+  let statusText = 'NOMINAL';
   let textColorClass = 'text-emerald-500';
 
   if (stressIndex >= 36 && stressIndex <= 70) {
-    color = '#F59E0B'; // Muted Amber Alert
-    statusText = 'ELEVATED THREAT VECTOR';
+    color = '#F59E0B'; // Amber Alert
+    statusText = 'ELEVATED';
     textColorClass = 'text-amber-500';
   } else if (stressIndex > 70) {
-    color = '#EF4444'; // Classic Crimson Hazard
-    statusText = 'CRITICAL DEGRADATION';
+    color = '#EF4444'; // Critical Hazard
+    statusText = 'CRITICAL';
     textColorClass = 'text-red-500';
   }
 
   // Circular gauge parameters
-  const radius = 38;
+  const radius = 22;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (stressIndex / 100) * circumference;
 
   return (
-    <div className="flex items-center space-x-4 bg-[#090e18] border border-slate-800 px-5 py-2 select-none shadow-none">
+    <div className="flex items-center space-x-3 select-none">
       {/* Precision Dial */}
-      <div className="relative w-16 h-16 flex items-center justify-center">
-        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+      <div className="relative w-12 h-12 flex items-center justify-center">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 60 60">
           {/* Outer high-precision ticks */}
           <circle
-            cx="50"
-            cy="50"
-            r="44"
+            cx="30"
+            cy="30"
+            r="26"
             stroke="#1e293b"
-            strokeWidth="1.5"
+            strokeWidth="1"
             fill="transparent"
-            strokeDasharray="1, 4.5"
+            strokeDasharray="1, 3"
           />
           {/* Background vector ring */}
           <circle
-            cx="50"
-            cy="50"
+            cx="30"
+            cy="30"
             r={radius}
             stroke="#0f172a"
-            strokeWidth="2"
+            strokeWidth="1.5"
             fill="transparent"
           />
           {/* Active vector progress */}
           <circle
-            cx="50"
-            cy="50"
+            cx="30"
+            cy="30"
             r={radius}
             stroke={loading ? '#334155' : color}
-            strokeWidth="3.5"
+            strokeWidth="2.5"
             fill="transparent"
             strokeDasharray={circumference}
             strokeDashoffset={loading ? circumference * 0.75 : strokeDashoffset}
@@ -66,30 +66,25 @@ export default function HeaderGauge() {
         </svg>
 
         {/* Center Readout */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center font-mono">
+        <div className="absolute inset-0 flex items-center justify-center font-mono">
           {loading ? (
-            <span className="text-[9px] font-bold text-slate-500 animate-pulse">SYNC</span>
+            <span className="text-[8px] font-bold text-slate-500 animate-pulse">...</span>
           ) : (
-            <>
-              <span className="text-sm font-black tracking-tighter text-white">
-                {stressIndex}%
-              </span>
-            </>
+            <span className="text-[11px] font-black tracking-tighter text-white">
+              {stressIndex}
+            </span>
           )}
         </div>
       </div>
 
-      {/* Avionic telemetry metrics */}
-      <div className="flex flex-col justify-center min-w-[130px] font-mono">
-        <div className="text-[8px] tracking-wider text-slate-500 uppercase">
-          index value dial
-        </div>
-        <div className="text-[10px] font-black text-slate-300 tracking-wider">
-          GLOBAL THREAT INDEX
-        </div>
-        <div className={`text-[9px] font-bold tracking-widest uppercase mt-0.5 ${loading ? 'text-slate-500 animate-pulse' : textColorClass}`}>
+      {/* Avionic telemetry labels */}
+      <div className="flex flex-col justify-center font-mono leading-none">
+        <span className="text-[8px] font-bold tracking-wider text-slate-500 uppercase">
+          PLANETARY STRESS INDEX
+        </span>
+        <span className={`text-[10px] font-black tracking-widest uppercase mt-1 ${loading ? 'text-slate-500 animate-pulse' : textColorClass}`}>
           {loading ? 'CALCULATING...' : statusText}
-        </div>
+        </span>
       </div>
     </div>
   );

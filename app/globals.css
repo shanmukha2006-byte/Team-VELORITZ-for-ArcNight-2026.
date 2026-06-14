@@ -46,3 +46,38 @@ body {
 .animate-blink {
   animation: blink 1s step-end infinite;
 }
+
+@theme {
+  --color-status-nominal: #10b981;
+  --color-status-alert: #f59e0b;
+  --color-status-critical: #ef4444;
+  --color-titanium-frame: #1e293b;
+  --color-matte-dark: #02040a;
+}
+
+@layer utilities {
+  /* Stealth Low-Profile Scrollbar Overrides */
+  .scrollbar-stealth {
+    scrollbar-width: thin;
+    scrollbar-color: #1e293b transparent;
+  }
+  .scrollbar-stealth::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-stealth::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-stealth::-webkit-scrollbar-thumb {
+    background-color: #1e293b;
+    border-radius: 0px;
+  }
+
+  /* Fixed Avionic Instrumentation HUD Panels */
+  .data-plate {
+    background: rgba(5, 8, 17, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid #1e293b;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}

@@ -39,3 +39,8 @@ next-env.d.ts
 .env.local
 .env
 
+# SQLite local databases
+*.db
+database.db
+
+
